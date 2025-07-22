@@ -1,15 +1,14 @@
 import { getAllPosts, getFeaturedPosts } from '../../lib/posts'
-import Layout from '../../components/Layout'
 import ArticleCard from '../../components/ArticleCard'
 import { TrendingUp, Clock, Users } from 'lucide-react'
 
-export default function Home() {
-  const allPosts = getAllPosts()
-  const featuredPosts = getFeaturedPosts(1)
+export default async function Home() {
+  const allPosts = await getAllPosts()
+  const featuredPosts = await getFeaturedPosts(1)
   const latestPosts = allPosts.slice(0, 6)
 
   return (
-    <Layout>
+    <div>
       {/* Hero Section */}
       <section className="bg-gradient-to-r from-green-600 to-blue-600 text-white py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -45,7 +44,7 @@ export default function Home() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-8">
               <h2 className="text-3xl font-bold text-gray-900 mb-4">Featured Story</h2>
-              <p className="text-gray-600">Don't miss our top story of the day</p>
+              <p className="text-gray-600">Don&apos;t miss our top story of the day</p>
             </div>
             <div className="max-w-4xl mx-auto">
               <ArticleCard post={featuredPosts[0]} featured={true} />
@@ -111,7 +110,7 @@ export default function Home() {
           </div>
         </div>
       </section>
-    </Layout>
+    </div>
   )
 }
 

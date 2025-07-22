@@ -1,14 +1,13 @@
-import { getAllPostIds, getPostData } from '../../../lib/posts'
-import Layout from '../../../components/Layout'
+import { getAllPostIds, getPostData } from '../../../../lib/posts'
 import Image from 'next/image'
 import { Calendar, User, Tag, ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
 interface PostPageProps {
-  params: {
+  params: Promise<{
     id: string
-  }
+  }>
 }
 
 export async function generateStaticParams() {
@@ -20,10 +19,11 @@ export async function generateStaticParams() {
 
 export default async function PostPage({ params }: PostPageProps) {
   try {
-    const post = await getPostData(params.id)
+    const resolvedParams = await params
+    const post = await getPostData(resolvedParams.id)
 
     return (
-      <Layout>
+      <div>
         <article className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Back Button */}
           <Link 
@@ -136,9 +136,10 @@ export default async function PostPage({ params }: PostPageProps) {
             </div>
           </div>
         </section>
-      </Layout>
+      </div>
     )
   } catch (error) {
+    console.error('Post not found:', error)
     notFound()
   }
 }
