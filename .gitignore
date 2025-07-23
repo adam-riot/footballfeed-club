@@ -1,0 +1,16 @@
+node_modules/
+.next/
+.env
+.env.local
+.env.production.local
+.env.development.local
+dist/
+build/
+*.log
+.DS_Store
+footballfeed-club/node_modules/
+footballfeed-club/.next/
+footballfeed-club/dist/
+footballfeed-club/build/
+package-lock.json
+footballfeed-club/package-lock.json
