@@ -2,6 +2,7 @@ import { getAllPosts, getFeaturedPosts } from '../../lib/posts'
 import ArticleCard from '../../components/ArticleCard'
 import { TrendingUp, Clock, Users } from 'lucide-react'
 
+// Football Feed Club - Homepage Component
 export default async function Home() {
   const allPosts = await getAllPosts()
   const featuredPosts = await getFeaturedPosts(1)
