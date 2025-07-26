@@ -54,14 +54,6 @@ export default function Header() {
 
           {/* Right side */}
           <div className="flex items-center space-x-4">
-            {/* Admin Link */}
-            <Link 
-              href="/admin"
-              className="text-gray-500 hover:text-green-600 text-sm font-medium transition-colors"
-            >
-              Admin
-            </Link>
-            
             {/* Search */}
             <button className="text-gray-500 hover:text-gray-700">
               <Search className="w-5 h-5" />
