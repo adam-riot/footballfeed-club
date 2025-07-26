@@ -2,14 +2,30 @@ import { NextRequest, NextResponse } from 'next/server'
 import fs from 'fs'
 import path from 'path'
 
-interface WebhookPayload {
+interface FootballArticle {
   title: string
   content: string
   excerpt: string
-  category: string
+  category: 'news' | 'transfer' | 'match' | 'viral' | 'analysis'
   tags: string[]
   author?: string
   featured_image?: string
+  priority?: 'low' | 'medium' | 'high' | 'urgent'
+  source_url?: string
+  match_data?: {
+    home_team: string
+    away_team: string
+    score?: string
+    date: string
+    league: string
+  }
+  transfer_data?: {
+    player: string
+    from_club: string
+    to_club: string
+    fee?: string
+    status: 'rumor' | 'confirmed' | 'completed'
+  }
 }
 
 export async function POST(request: NextRequest) {
@@ -25,7 +41,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const payload: WebhookPayload = await request.json()
+    const payload: FootballArticle = await request.json()
 
     // Validate required fields
     if (!payload.title || !payload.content || !payload.category) {
