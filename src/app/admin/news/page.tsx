@@ -1,17 +1,100 @@
-import { getAllPosts } from '../../../../lib/posts'
-import Link from 'next/link'
-import { Metadata } from 'next'
+'use client'
 
-export const metadata: Metadata = {
-  title: 'News Management | Football Feed Admin',
-  description: 'Manage news articles and content',
+import Link from 'next/link'
+import { useState, useEffect } from 'react'
+
+interface Post {
+  id: string
+  title: string
+  excerpt: string
+  date: string
+  author: string
+  category?: string
+  tags?: string[]
+  filename: string
 }
 
-export default async function AdminNews() {
-  const posts = await getAllPosts()
-  const newsPosts = posts.filter(p => 
-    p.category === 'news' || p.tags?.includes('news') || !p.category
-  )
+// Note: Since we need client-side features, we'll handle metadata differently
+// export const metadata: Metadata = {
+//   title: 'News Management | Football Feed Admin',
+//   description: 'Manage news articles and content',
+// }
+
+export default function AdminNews() {
+  const [posts, setPosts] = useState<Post[]>([])
+  const [deletedPosts, setDeletedPosts] = useState<string[]>([])
+  const [loading, setLoading] = useState(true)
+
+  // Load posts and deleted posts from localStorage
+  useEffect(() => {
+    async function loadData() {
+      try {
+        // Load posts
+        const response = await fetch('/api/posts/list')
+        const data = await response.json()
+        setPosts(data.posts || [])
+        
+        // Load deleted posts from localStorage
+        const localDeleted = JSON.parse(localStorage.getItem('deletedPosts') || '[]')
+        setDeletedPosts(localDeleted)
+      } catch (error) {
+        console.error('Error loading data:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+    
+    loadData()
+  }, [])
+
+  // Filter posts for news and exclude deleted ones
+  const newsPosts = posts
+    .filter(p => p.category === 'news' || p.tags?.includes('news') || !p.category)
+    .filter(p => !deletedPosts.includes(p.filename))
+
+  const handleDelete = async (post: Post) => {
+    if (!confirm(`Are you sure you want to delete "${post.title}"?`)) {
+      return
+    }
+
+    try {
+      // Update localStorage immediately for instant UI update
+      const newDeletedPosts = [...deletedPosts, post.filename]
+      setDeletedPosts(newDeletedPosts)
+      localStorage.setItem('deletedPosts', JSON.stringify(newDeletedPosts))
+
+      // Try to sync with server (best effort - don't wait for response)
+      Promise.all([
+        fetch('/api/posts/delete', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ filename: post.filename })
+        }).catch(() => {}), // Ignore errors
+        
+        fetch('/api/posts/soft-delete', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ filename: post.filename })
+        }).catch(() => {}) // Ignore errors
+      ])
+      
+      console.log(`Post "${post.title}" deleted locally`)
+    } catch (error) {
+      console.error('Delete error:', error)
+      // Even if server fails, keep the local delete
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-64">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
+          <p className="text-gray-600">Loading news articles...</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div>
@@ -97,7 +180,7 @@ export default async function AdminNews() {
                       <span>by {post.author}</span>
                       {post.tags && (
                         <div className="flex space-x-1">
-                          {post.tags.slice(0, 3).map((tag, index) => (
+                          {post.tags.slice(0, 3).map((tag: string, index: number) => (
                             <span key={index} className="bg-gray-100 px-2 py-1 rounded">
                               {tag}
                             </span>
@@ -119,7 +202,10 @@ export default async function AdminNews() {
                     >
                       Edit
                     </Link>
-                    <button className="text-red-600 hover:text-red-700 text-sm font-medium">
+                    <button 
+                      onClick={() => handleDelete(post)}
+                      className="text-red-600 hover:text-red-700 text-sm font-medium"
+                    >
                       Delete
                     </button>
                   </div>
