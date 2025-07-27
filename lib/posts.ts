@@ -25,9 +25,22 @@ export function getAllPosts(): PostData[] {
     return []
   }
 
+  // Read deleted posts list
+  const deletedPostsFile = path.join(process.cwd(), 'content', 'deleted-posts.json')
+  let deletedPosts: string[] = []
+  try {
+    if (fs.existsSync(deletedPostsFile)) {
+      const deletedData = fs.readFileSync(deletedPostsFile, 'utf8')
+      deletedPosts = JSON.parse(deletedData)
+    }
+  } catch (error) {
+    console.log('No deleted posts file found or error reading it')
+  }
+
   const fileNames = fs.readdirSync(postsDirectory)
   const allPostsData = fileNames
     .filter(fileName => fileName.endsWith('.md'))
+    .filter(fileName => !deletedPosts.includes(fileName)) // Exclude deleted posts
     .map((fileName) => {
       const id = fileName.replace(/\.md$/, '')
       const fullPath = path.join(postsDirectory, fileName)

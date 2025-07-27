@@ -42,19 +42,34 @@ export default function ManagePosts() {
 
     setDeleting(filename)
     try {
-      const response = await fetch(`/api/posts/delete?filename=${encodeURIComponent(filename)}`, {
+      // Try hard delete first (for development)
+      let response = await fetch(`/api/posts/delete?filename=${encodeURIComponent(filename)}`, {
         method: 'DELETE'
       })
 
+      let data = await response.json()
+
+      // If hard delete fails (production), try soft delete
+      if (!response.ok && data.error?.includes('production environment')) {
+        response = await fetch('/api/posts/soft-delete', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ filename, title })
+        })
+        data = await response.json()
+      }
+
       if (response.ok) {
         setPosts(posts.filter(post => post.filename !== filename))
-        alert('Post deleted successfully!')
+        alert(data.message || 'Post deleted successfully!')
       } else {
-        throw new Error('Failed to delete post')
+        alert(data.error || 'Failed to delete post')
       }
     } catch (error) {
       console.error('Error deleting post:', error)
-      alert('Failed to delete post. Please try again.')
+      alert('Network error. Please check your connection and try again.')
     } finally {
       setDeleting(null)
     }

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { unlink } from 'fs/promises'
+import { unlink, access } from 'fs/promises'
 import { join } from 'path'
 import { revalidatePath } from 'next/cache'
 
@@ -20,8 +20,32 @@ export async function DELETE(request: NextRequest) {
     const postsDir = join(process.cwd(), 'content', 'posts')
     const filePath = join(postsDir, filename)
     
-    // Delete the file
-    await unlink(filePath)
+    // Check if file exists first
+    try {
+      await access(filePath)
+    } catch (err) {
+      return NextResponse.json({ 
+        error: 'File not found' 
+      }, { status: 404 })
+    }
+
+    // Try to delete the file
+    try {
+      await unlink(filePath)
+      console.log(`Successfully deleted: ${filename}`)
+    } catch (deleteError) {
+      console.error('Delete error:', deleteError)
+      
+      // In production (Vercel), we might not be able to delete files
+      // So we'll return a different approach message
+      if (process.env.NODE_ENV === 'production' || process.env.VERCEL) {
+        return NextResponse.json({ 
+          error: 'File deletion not supported in production environment. Please use GitHub repository for file management.' 
+        }, { status: 400 })
+      }
+      
+      throw deleteError
+    }
     
     // Revalidate paths to update the cache
     revalidatePath('/posts')
@@ -36,7 +60,7 @@ export async function DELETE(request: NextRequest) {
   } catch (error) {
     console.error('Delete error:', error)
     return NextResponse.json({ 
-      error: 'Failed to delete post' 
+      error: 'Failed to delete post: ' + (error as Error).message 
     }, { status: 500 })
   }
 }

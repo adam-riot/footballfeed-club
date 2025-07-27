@@ -6,14 +6,27 @@ import matter from 'gray-matter'
 export async function GET() {
   try {
     const postsDirectory = path.join(process.cwd(), 'content', 'posts')
+    const deletedPostsFile = path.join(process.cwd(), 'content', 'deleted-posts.json')
     
     if (!fs.existsSync(postsDirectory)) {
       return NextResponse.json([])
     }
 
+    // Read deleted posts list
+    let deletedPosts: string[] = []
+    try {
+      if (fs.existsSync(deletedPostsFile)) {
+        const deletedData = fs.readFileSync(deletedPostsFile, 'utf8')
+        deletedPosts = JSON.parse(deletedData)
+      }
+    } catch (error) {
+      console.log('No deleted posts file found or error reading it')
+    }
+
     const fileNames = fs.readdirSync(postsDirectory)
     const allPostsData = fileNames
       .filter(fileName => fileName.endsWith('.md'))
+      .filter(fileName => !deletedPosts.includes(fileName)) // Exclude deleted posts
       .map((fileName) => {
         const id = fileName.replace(/\.md$/, '')
         const fullPath = path.join(postsDirectory, fileName)
