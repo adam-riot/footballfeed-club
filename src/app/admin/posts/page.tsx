@@ -18,8 +18,14 @@ export default function ManagePosts() {
   const [posts, setPosts] = useState<PostData[]>([])
   const [loading, setLoading] = useState(true)
   const [deleting, setDeleting] = useState<string | null>(null)
+  const [deletedPosts, setDeletedPosts] = useState<string[]>([])
 
   useEffect(() => {
+    // Load deleted posts from localStorage
+    const saved = localStorage.getItem('deleted-posts')
+    if (saved) {
+      setDeletedPosts(JSON.parse(saved))
+    }
     fetchPosts()
   }, [])
 
@@ -41,39 +47,49 @@ export default function ManagePosts() {
     }
 
     setDeleting(filename)
+    
+    // Client-side delete (immediate effect)
+    const newDeletedPosts = [...deletedPosts, filename]
+    setDeletedPosts(newDeletedPosts)
+    localStorage.setItem('deleted-posts', JSON.stringify(newDeletedPosts))
+    setPosts(posts.filter(post => post.filename !== filename))
+    
     try {
-      // Try hard delete first (for development)
-      let response = await fetch(`/api/posts/delete?filename=${encodeURIComponent(filename)}`, {
+      // Try server-side delete as backup
+      const response = await fetch(`/api/posts/delete?filename=${encodeURIComponent(filename)}`, {
         method: 'DELETE'
       })
 
       let data = await response.json()
 
-      // If hard delete fails (production), try soft delete
+      // If hard delete fails, try soft delete
       if (!response.ok && data.error?.includes('production environment')) {
-        response = await fetch('/api/posts/soft-delete', {
+        const softResponse = await fetch('/api/posts/soft-delete', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({ filename, title })
         })
-        data = await response.json()
+        data = await softResponse.json()
       }
 
       if (response.ok) {
-        setPosts(posts.filter(post => post.filename !== filename))
-        alert(data.message || 'Post deleted successfully!')
+        alert('Post deleted successfully on server!')
       } else {
-        alert(data.error || 'Failed to delete post')
+        // Server delete failed, but client-side delete already worked
+        alert(`Post removed from view (client-side). Server message: ${data.error || 'Unknown error'}`)
       }
     } catch (error) {
-      console.error('Error deleting post:', error)
-      alert('Network error. Please check your connection and try again.')
+      console.error('Error with server delete:', error)
+      alert('Post removed from view. Server sync may be unavailable.')
     } finally {
       setDeleting(null)
     }
   }
+
+  // Filter posts client-side to exclude deleted ones
+  const visiblePosts = posts.filter(post => !deletedPosts.includes(post.filename))
 
   if (loading) {
     return (
@@ -103,12 +119,12 @@ export default function ManagePosts() {
       </div>
 
       <div className="bg-white p-4 rounded-lg shadow mb-6">
-        <div className="text-2xl font-bold text-gray-900">{posts.length}</div>
-        <div className="text-sm text-gray-600">Total Posts</div>
+        <div className="text-2xl font-bold text-gray-900">{visiblePosts.length}</div>
+        <div className="text-sm text-gray-600">Visible Posts</div>
       </div>
 
       <div className="grid gap-4">
-        {posts.map((post) => (
+        {visiblePosts.map((post) => (
           <div key={post.id} className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
             <div className="flex items-start justify-between">
               <div className="flex-1">
@@ -143,7 +159,7 @@ export default function ManagePosts() {
         ))}
       </div>
 
-      {posts.length === 0 && (
+      {visiblePosts.length === 0 && (
         <div className="text-center py-12">
           <div className="text-gray-400 text-6xl mb-4">📝</div>
           <h3 className="text-lg font-medium text-gray-900 mb-2">No posts found</h3>
