@@ -44,17 +44,17 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/category/transfer-news" className="text-gray-400 hover:text-white transition-colors">
+                <Link href="/transfers" className="text-gray-400 hover:text-white transition-colors">
                   Transfer News
                 </Link>
               </li>
               <li>
-                <Link href="/category/match-preview" className="text-gray-400 hover:text-white transition-colors">
-                  Match Previews
+                <Link href="/matches" className="text-gray-400 hover:text-white transition-colors">
+                  Matches
                 </Link>
               </li>
               <li>
-                <Link href="/category/analysis" className="text-gray-400 hover:text-white transition-colors">
+                <Link href="/analysis" className="text-gray-400 hover:text-white transition-colors">
                   Analysis
                 </Link>
               </li>
@@ -66,23 +66,23 @@ export default function Footer() {
             <h3 className="text-lg font-semibold mb-4">Categories</h3>
             <ul className="space-y-2">
               <li>
-                <Link href="/category/premier-league" className="text-gray-400 hover:text-white transition-colors">
-                  Premier League
+                <Link href="/news" className="text-gray-400 hover:text-white transition-colors">
+                  News
                 </Link>
               </li>
               <li>
-                <Link href="/category/champions-league" className="text-gray-400 hover:text-white transition-colors">
-                  Champions League
+                <Link href="/transfers" className="text-gray-400 hover:text-white transition-colors">
+                  Transfers
                 </Link>
               </li>
               <li>
-                <Link href="/category/international" className="text-gray-400 hover:text-white transition-colors">
-                  International
+                <Link href="/matches" className="text-gray-400 hover:text-white transition-colors">
+                  Matches
                 </Link>
               </li>
               <li>
-                <Link href="/category/youth-football" className="text-gray-400 hover:text-white transition-colors">
-                  Youth Football
+                <Link href="/analysis" className="text-gray-400 hover:text-white transition-colors">
+                  Analysis
                 </Link>
               </li>
             </ul>
