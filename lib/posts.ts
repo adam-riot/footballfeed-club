@@ -33,7 +33,7 @@ export function getAllPosts(): PostData[] {
       const deletedData = fs.readFileSync(deletedPostsFile, 'utf8')
       deletedPosts = JSON.parse(deletedData)
     }
-  } catch (error) {
+  } catch {
     console.log('No deleted posts file found or error reading it')
   }
 

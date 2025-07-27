@@ -23,7 +23,7 @@ export async function DELETE(request: NextRequest) {
     // Check if file exists first
     try {
       await access(filePath)
-    } catch (err) {
+    } catch {
       return NextResponse.json({ 
         error: 'File not found' 
       }, { status: 404 })

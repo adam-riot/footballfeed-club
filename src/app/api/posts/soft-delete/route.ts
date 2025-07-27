@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
     try {
       const data = await readFile(DELETED_POSTS_FILE, 'utf8')
       deletedPosts = JSON.parse(data)
-    } catch (error) {
+    } catch {
       // File doesn't exist yet, that's okay
       deletedPosts = []
     }

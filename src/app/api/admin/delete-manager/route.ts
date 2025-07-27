@@ -3,7 +3,7 @@ import { revalidatePath } from 'next/cache'
 
 // Simple in-memory storage untuk deleted posts (production workaround)
 // Dalam production, ini akan reset bila server restart, tetapi OK untuk demo
-let deletedPostsCache: string[] = []
+const deletedPostsCache: string[] = []
 
 export async function POST(request: NextRequest) {
   try {
@@ -54,9 +54,4 @@ export async function GET() {
     deletedPosts: deletedPostsCache,
     deletedCount: deletedPostsCache.length
   })
-}
-
-// Export function to get deleted posts for other APIs
-export function getDeletedPosts(): string[] {
-  return deletedPostsCache
 }
