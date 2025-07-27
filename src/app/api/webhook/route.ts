@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import fs from 'fs'
 import path from 'path'
+import { revalidatePath } from 'next/cache'
 
 interface FootballArticle {
   title: string
@@ -79,6 +80,11 @@ ${payload.content}`
 
     // Write the file
     fs.writeFileSync(filePath, frontmatter, 'utf8')
+
+    // Revalidate paths to clear cache and show new posts immediately
+    revalidatePath('/')
+    revalidatePath('/posts')
+    revalidatePath('/news')
 
     // Trigger rebuild (this would typically trigger a Git commit and push)
     // For now, we'll just return success
